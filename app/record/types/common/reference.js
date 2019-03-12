@@ -3,7 +3,6 @@
 const BaseObject = require("../../../baseObject");
 
 class Reference extends BaseObject {
-
     constructor() {
         super();
         this.internalId = undefined;
@@ -18,14 +17,13 @@ class Reference extends BaseObject {
     }
 
     _getAttributes() {
-
         const attr = {
-            "externalId": this.externalId,
-            "internalId": this.internalId,
-            "name": this.name,
-            "type": this.type,
-            "typeId": this.typeId,
-            "xsi:type": `platformCore:${this._reference}`,
+            externalId: this.externalId,
+            internalId: this.internalId,
+            name: this.name,
+            type: this.type,
+            typeId: this.typeId,
+            "xsi:type": `platformCore:${this._reference}`
         };
 
         if (!this.externalId) {
@@ -44,11 +42,14 @@ class Reference extends BaseObject {
             delete attr.type;
         }
 
+        if (!this.typeId) {
+            delete attr.typeId;
+        }
+
         return attr;
     }
 
     getNode() {
-
         if (!this.externalId && !this.internalId) {
             throw new Error("Neither internalId nor externalId are defined");
         }
