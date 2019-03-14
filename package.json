@@ -28,7 +28,6 @@
     "adm-zip": "^0.4.11",
     "crypto": "^1.0.1",
     "denodeify": "^1.2.1",
-    "lodash": "^4.17.10",
     "mkdirp": "^0.5.1",
     "soap": "^0.25.0",
     "superagent": "^3.8.3"
