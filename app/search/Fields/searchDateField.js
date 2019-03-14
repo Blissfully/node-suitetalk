@@ -8,6 +8,7 @@ class SearchDateField extends SearchField {
         super();
         this._type = "platformCore";
         this._name = "SearchDateField";
+        this._searchValueXsdType = "xsd:dateTime"
     }
 }
 

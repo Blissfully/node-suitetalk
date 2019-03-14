@@ -1,6 +1,5 @@
 "use strict";
 
-const _ = require("lodash");
 const crypto = require("crypto");
 const path = require("path");
 const soap = require("soap");
@@ -287,7 +286,7 @@ class Configuration {
                 namespaceArrayElements: false
             }).then((client) => {
 
-                _.assign(client.wsdl.definitions.xmlns, _getNameSpaces(this.configuration));
+                Object.assign(client.wsdl.definitions.xmlns, _getNameSpaces(this.configuration));
                 client.wsdl.xmlnsInEnvelope = client.wsdl._xmlnsMap();
 
                 const authHeader = _createAuthHeader(thisRef.configuration);

@@ -28,13 +28,13 @@ service
         return service.search(search);
     }).then((result, raw, soapHeader) => {
 
-    console.log("result");
-    console.log(JSON.stringify(result));
+        console.log("result");
+        console.log(JSON.stringify(result));
 
 
-}).catch(function (err) {
-    console.log("error");
-    console.log(service.config.client.lastRequest);
-    console.log("message");
-    console.log(JSON.stringify(err));
-});
+    }).catch(function (err) {
+        console.log("error");
+        console.log(service.config.client.lastRequest);
+        console.log("message");
+        console.log(JSON.stringify(err));
+    });

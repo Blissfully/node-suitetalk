@@ -9,6 +9,7 @@ class SearchField extends BaseObject {
         this.field = undefined;
         this.operator = undefined;
         this.searchValue = undefined;
+        this.searchValue2 = undefined
     }
 
     _getSoapType() {
@@ -53,8 +54,20 @@ class SearchField extends BaseObject {
 
         node[type]["platformCore:searchValue"] = {};
         node[type]["platformCore:searchValue"]["$attributes"] = {};
-        node[type]["platformCore:searchValue"]["$attributes"][this.field] = this.searchValue;
+        if (this._searchValueXsdType) {
+            node[type]["platformCore:searchValue"]["$attributes"]["xsi:type"] = this._searchValueXsdType
+        }
+        node[type]["platformCore:searchValue"]["$value"] = this.searchValue;
 
+        // yeah, it is called searchValue2, and it is used in interval searching
+        if (this.searchValue2) {
+            node[type]["platformCore:searchValue2"] = {};
+            node[type]["platformCore:searchValue2"]["$attributes"] = {};
+            if (this._searchValueXsdType) {
+                node[type]["platformCore:searchValue2"]["$attributes"]["xsi:type"] = this._searchValueXsdType
+            }
+            node[type]["platformCore:searchValue2"]["$value"] = this.searchValue2;
+        }
         return node;
     }
 }

@@ -8,6 +8,7 @@ class SearchStringField extends SearchField {
         super();
         this._type = "platformCore";
         this._name = "SearchStringField";
+        this._searchValueXsdType = "xsd:string"
     }
 }
 
