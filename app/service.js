@@ -1,7 +1,7 @@
 "use strict";
 
 const denodeify = require("denodeify");
-
+const GetDataCenterUrls = require("./getDataCenterUrls")
 /**
  * Check that required parameters are present
  * @param {Service} service
@@ -27,8 +27,8 @@ class Service {
      * Create connection from configuration object
      * @return {Promise<any>}
      */
-    init() {
-        return this.config.createConnection();
+    init(options = {}) {
+        return this.config.createConnection(options);
     }
 
     /**
@@ -95,6 +95,16 @@ class Service {
         return get(soapObj);
     }
 
+    getDataCenterUrls(account) {
+        _assertConnection(this);
+        const request = new GetDataCenterUrls();
+        console.log("hello")
+        request.account = account
+        const soapObj = request.getNode();
+        const getDataCenterUrls = denodeify(this.config.client.getDataCenterUrls);
+        console.log({ getDataCenterUrls })
+        return getDataCenterUrls(soapObj);
+    }
     /**
      * Get a list of records by reference
      * @param {Array} recordRefArr
