@@ -98,7 +98,6 @@ class Service {
     getDataCenterUrls(account) {
         _assertConnection(this);
         const request = new GetDataCenterUrls();
-        console.log("hello")
         request.account = account
         const soapObj = request.getNode();
         const getDataCenterUrls = denodeify(this.config.client.getDataCenterUrls);

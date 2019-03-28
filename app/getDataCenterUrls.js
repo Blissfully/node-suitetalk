@@ -5,7 +5,6 @@ const BaseObject = require("./baseObject");
 class DataCenterUrls extends BaseObject {
 
     constructor() {
-        console.log("hello")
         super();
         this.account = undefined;
     }
