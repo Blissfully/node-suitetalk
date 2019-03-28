@@ -101,7 +101,7 @@ class Service {
         request.account = account
         const soapObj = request.getNode();
         const getDataCenterUrls = denodeify(this.config.client.getDataCenterUrls);
-        console.log({ getDataCenterUrls })
+
         return getDataCenterUrls(soapObj);
     }
     /**

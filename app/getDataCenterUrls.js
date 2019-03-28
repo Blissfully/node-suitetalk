@@ -26,7 +26,7 @@ class DataCenterUrls extends BaseObject {
 
         node[type] = {};
         node["account"] = this.account;
-        console.log({ node })
+
         return node;
     }
 }
