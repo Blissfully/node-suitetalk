@@ -28,7 +28,6 @@ const BaseObject = require("./baseObject");
  * @property {ICredentials} [credentials]
  * @property {IToken} [token]
  * @property {string} wsdlPath
- * @property {string} endpointUrl
  */
 
 /**
