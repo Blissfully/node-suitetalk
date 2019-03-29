@@ -10,6 +10,7 @@ const NetSuite = {
     Service: require("./service"),
     Soap: require("./soap"),
     Util: require("./util"),
+    GetDataCenterUrls: require("./getDataCenterUrls")
 };
 
 module.exports = NetSuite;

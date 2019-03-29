@@ -269,7 +269,7 @@ class Configuration {
      * Create node-soap client
      * @return {Promise<any>}
      */
-    createConnection() {
+    createConnection(options = {}) {
 
         const thisRef = this;
 
@@ -280,19 +280,21 @@ class Configuration {
             if (wsdlPath.indexOf("netsuite.wsdl") === -1) {
                 wsdlPath = path.normalize(`${wsdlPath}/netsuite.wsdl`);
             }
-
-            soap.createClientAsync(wsdlPath, {
+            const defaultOptions = {
                 attributesKey: "$attributes",
-                namespaceArrayElements: false
-            }).then((client) => {
+                namespaceArrayElements: false,
+            }
+
+            const clientOptions = Object.assign(defaultOptions, options)
+            soap.createClientAsync(wsdlPath, clientOptions).then((client) => {
 
                 Object.assign(client.wsdl.definitions.xmlns, _getNameSpaces(this.configuration));
                 client.wsdl.xmlnsInEnvelope = client.wsdl._xmlnsMap();
-
                 const authHeader = _createAuthHeader(thisRef.configuration);
                 client.addSoapHeader(authHeader);
 
                 thisRef.client = client;
+
                 resolve(client);
             }).catch((err) => {
                 reject(err);
