@@ -128,7 +128,7 @@ class Service {
         _assertConnection(this);
         const param = {
             record: {
-                $attributes: { recordType: recordType }
+                $attributes: { recordType }
             }
         };
         const getAll = denodeify(this.config.client.getAll);
