@@ -118,17 +118,18 @@ class Service {
         return getList(soapObj);
     }
 
+
     /**
-     * Get a list of records by type
-     * @param {string} recordType
-     * @return {Promise<any>}
-     */
+      * Get a list of records by type
+      * @param {string} recordType
+      * @return {Promise<any>}
+      */
     getAll(recordType) {
         _assertConnection(this);
         const param = {
             record: {
-                recordType,
-            },
+                $attributes: { recordType: recordType }
+            }
         };
         const getAll = denodeify(this.config.client.getAll);
         return getAll(param);
