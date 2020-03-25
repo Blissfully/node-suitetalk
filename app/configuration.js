@@ -4,13 +4,13 @@ const crypto = require("crypto");
 const path = require("path");
 const soap = require("soap");
 const BaseObject = require("./baseObject");
-
+const _ = require("lodash");
 /**
  * @typedef {Object} ICredentials
  * @property {string} email
  * @property {string} password
- * @property {string} [role]
- * @property {string} [applicationId]
+ * @property {string} role
+ * @property {string} applicationId
  */
 
 /**
@@ -25,6 +25,7 @@ const BaseObject = require("./baseObject");
  * @typedef {Object} IConfigurationObject
  * @property {string} account
  * @property {string} apiVersion
+ * @property {boolean} accountSpecificUrl
  * @property {ICredentials} [credentials]
  * @property {IToken} [token]
  * @property {string} wsdlPath
@@ -36,15 +37,18 @@ const BaseObject = require("./baseObject");
  * @private
  */
 function _validateConfiguration(configuration) {
-
     // NetSuite account
     if (!configuration.account) {
-        throw new Error("account is a required - NetSuite account number ex. 12345");
+        throw new Error(
+            "account is a required - NetSuite account number ex. 12345"
+        );
     }
 
     // API version
     if (!configuration.apiVersion) {
-        throw new Error("apiVersion is required - NetSuite endpoint version ex. 2018_1");
+        throw new Error(
+            "apiVersion is required - NetSuite endpoint version ex. 2018_1"
+        );
     }
 
     // Path to WSDL
@@ -127,7 +131,7 @@ function _getNameSpaces(configuration) {
         tranCust: `urn:customers_${configuration.apiVersion}.transactions.webservices.netsuite.com`,
         tranGeneral: `urn:general_${configuration.apiVersion}.transactions.webservices.netsuite.com`,
         tranInvt: `urn:inventory_${configuration.apiVersion}.transactions.webservices.netsuite.com`,
-        tranSales: `urn:sales_${configuration.apiVersion}.transactions.webservices.netsuite.com`,
+        tranSales: `urn:sales_${configuration.apiVersion}.transactions.webservices.netsuite.com`
     };
 }
 
@@ -152,21 +156,36 @@ function getOAuthKeys(configuration) {
     res.consumerKey = configuration.token.consumer_key;
     res.tokenKey = configuration.token.token_key;
 
-    res.nonce = Math.random().toString(36).substr(2, 15) +
-        Math.random().toString(36).substr(2, 15);
+    res.nonce =
+        Math.random()
+            .toString(36)
+            .substr(2, 15) +
+        Math.random()
+            .toString(36)
+            .substr(2, 15);
 
-    res.timeStamp = Math.round((new Date()).getTime() / 1000);
+    res.timeStamp = Math.round(new Date().getTime() / 1000);
 
     const key = `${configuration.token.consumer_secret}&${configuration.token.token_secret}`;
 
-    const baseString = configuration.account + "&" + configuration.token.consumer_key + "&" +
-        configuration.token.token_key + "&" + res.nonce + "&" + res.timeStamp;
+    const baseString =
+        configuration.account +
+        "&" +
+        configuration.token.consumer_key +
+        "&" +
+        configuration.token.token_key +
+        "&" +
+        res.nonce +
+        "&" +
+        res.timeStamp;
 
-    res.base64hash = crypto.createHmac("sha256", Buffer.from(key, "utf8"))
-        .update(baseString).digest(null, null).toString("base64");
+    res.base64hash = crypto
+        .createHmac("sha256", Buffer.from(key, "utf8"))
+        .update(baseString)
+        .digest(null, null)
+        .toString("base64");
     return res;
 }
-
 
 /**
  * Returns a NS SOAP authentication header
@@ -176,34 +195,31 @@ function getOAuthKeys(configuration) {
  * @return {Object}
  */
 function _createAuthHeader(configuration) {
-
     const soapObj = {};
 
     if (configuration.credentials) {
-
         soapObj["platformMsgs:passport"] = {
             "platformCore:account": configuration.account,
             "platformCore:email": configuration.credentials.email,
-            "platformCore:password": configuration.credentials.password,
+            "platformCore:password": configuration.credentials.password
         };
 
         if (configuration.credentials.role) {
             soapObj["platformMsgs:passport"]["platformCore:role"] = {
                 $attributes: {
-                    internalId: configuration.credentials.role,
-                },
+                    internalId: configuration.credentials.role
+                }
             };
         }
 
         if (configuration.credentials.applicationId) {
             soapObj["platformMsgs:applicationInfo"] = {
-                "platformMsgs:applicationId": configuration.credentials.applicationId,
+                "platformMsgs:applicationId": configuration.credentials.applicationId
             };
         }
     }
 
     if (configuration.token && !configuration.credentials) {
-
         const o = getOAuthKeys(configuration);
 
         soapObj["platformMsgs:tokenPassport"] = {
@@ -212,14 +228,14 @@ function _createAuthHeader(configuration) {
             "platformCore:nonce": o.nonce,
             "platformCore:timestamp": o.timeStamp,
             "platformCore:token": o.tokenKey,
-            "platformCore:version": "1.0",
+            "platformCore:version": "1.0"
         };
 
         soapObj["platformMsgs:tokenPassport"]["platformCore:signature"] = {
             $attributes: {
-                algorithm: "HMAC_SHA256",
+                algorithm: "HMAC_SHA256"
             },
-            $value: o.base64hash,
+            $value: o.base64hash
         };
     }
 
@@ -227,7 +243,6 @@ function _createAuthHeader(configuration) {
 }
 
 class Configuration {
-
     /**
      * Object Constructor
      * @param {IConfigurationObject} configuration
@@ -270,35 +285,46 @@ class Configuration {
      * @return {Promise<any>}
      */
     createConnection(options = {}) {
-
         const thisRef = this;
 
         return new Promise((resolve, reject) => {
-
-            let wsdlPath = thisRef.configuration.wsdlPath;
+            const config = thisRef.configuration;
+            let wsdlPath = config.wsdlPath;
 
             if (wsdlPath.indexOf("netsuite.wsdl") === -1) {
                 wsdlPath = path.normalize(`${wsdlPath}/netsuite.wsdl`);
             }
-            const defaultOptions = {
+
+            const soapOptions = {
                 attributesKey: "$attributes",
-                namespaceArrayElements: false,
+                namespaceArrayElements: false
+            };
+
+            const account = config.account.replace("_", "-");
+
+            if (config.accountSpecificUrl) {
+                soapOptions.endpoint = `https://${account}.suitetalk.api.netsuite.com/services/NetSuitePort_${config.apiVersion}`;
             }
 
-            const clientOptions = Object.assign(defaultOptions, options)
-            soap.createClientAsync(wsdlPath, clientOptions).then((client) => {
+            soap
+                .createClientAsync(wsdlPath, soapOptions)
+                .then(client => {
+                    _.assign(
+                        client.wsdl.definitions.xmlns,
+                        _getNameSpaces(this.configuration)
+                    );
+                    client.wsdl.xmlnsInEnvelope = client.wsdl._xmlnsMap();
 
-                Object.assign(client.wsdl.definitions.xmlns, _getNameSpaces(this.configuration));
-                client.wsdl.xmlnsInEnvelope = client.wsdl._xmlnsMap();
-                const authHeader = _createAuthHeader(thisRef.configuration);
-                client.addSoapHeader(authHeader);
+                    const authHeader = _createAuthHeader(config);
+                    client.addSoapHeader(authHeader);
 
-                thisRef.client = client;
+                    thisRef.client = client;
 
-                resolve(client);
-            }).catch((err) => {
-                reject(err);
-            });
+                    resolve(client);
+                })
+                .catch(err => {
+                    reject(err);
+                });
         });
     }
 }
